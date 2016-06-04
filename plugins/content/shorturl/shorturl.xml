@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8"?>
+<extension version="3" type="plugin" group="content" method="upgrade">
+  <name>PLG_CONTENT_SHORTURL</name>
+  <author>Helios Ciancio</author>
+  <creationDate>June 2016</creationDate>
+  <copyright>(C) 2016 Helios Ciancio. All rights reserved.</copyright>
+  <license>http://www.gnu.org/licenses/gpl-3.0.html GNU/GPL v3</license>
+  <authorEmail>info@eshiol.it</authorEmail>
+  <authorUrl>www.eshiol.it</authorUrl>
+  <version>3.5.0.57</version>
+  <description>PLG_CONTENT_SHORTURL_XML_DESCRIPTION</description>
+  <files>
+    <filename plugin="shorturl">shorturl.php</filename>
+    <folder>language</folder>
+  </files>
+  <config>
+    <fields name="params">
+      <fieldset name="basic">
+        <field name="debug" type="radio" class="btn-group" default="0" label="PLG_CONTENT_SHORTURL_FIELD_DEBUG_LABEL" description="PLG_CONTENT_SHORTURL_FIELD_DEBUG_DESC">
+          <option value="1">JYES</option>
+          <option value="0">JNO</option>
+        </field>
+        <field name="length" type="integer" label="PLG_CONTENT_SHORTURL_FIELD_LENGTH_LABEL" description="PLG_CONTENT_SHORTURL_FIELD_LENGTH_DESC" first="3" last="32" step="1" default="4">
+			</field>
+      </fieldset>
+    </fields>
+  </config>
+</extension>
