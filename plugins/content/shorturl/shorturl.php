@@ -20,6 +20,9 @@ require_once JPATH_ROOT . '/components/com_content/helpers/route.php';
 
 jimport('joomla.plugin.plugin');
 
+use Joomla\CMS\Language\LanguageHelper;
+
+
 /**
  * @version		3.8.0
  * @since		3.5.0
@@ -93,8 +96,9 @@ class plgContentShorturl extends JPlugin
 		$url  = ContentHelperRoute::getArticleRoute($article->slug, $article->catid, $article->language);
 		JLog::add(new JLogEntry('url: '.$url, JLog::DEBUG, 'plg_content_shorturl'));
 		
-		$shortUrl = $this->_getShortUrl($url);
-		JLog::add(new JLogEntry('shorturl: '.$shortUrl, JLog::DEBUG, 'plg_content_shorturl'));
+		$short_url = $this->_getShortUrl($url, $article->language);
+
+		JLog::add(new JLogEntry('shorturl: '.$short_url, JLog::DEBUG, 'plg_content_shorturl'));
 		
 		// See if the current url exists in the database as a redirect.
 		$db    = JFactory::getDbo();
@@ -117,7 +121,7 @@ class plgContentShorturl extends JPlugin
 			->select($db->qn('id'))
 			->select($db->qn('new_url'))
 			->from($db->qn('#__redirect_links'))
-			->where($db->qn('old_url').' = '.$db->q($shortUrl))
+			->where($db->qn('old_url').' = '.$db->q($short_url))
 			;
 		$db->setQuery($query, 0, 1);
 		$link = $db->loadObject();
@@ -135,7 +139,7 @@ class plgContentShorturl extends JPlugin
 			);
 			
 			$values = array(
-				$db->q($shortUrl),
+				$db->q($short_url),
 				$db->q($url),
 				$db->q(''),
 				$db->q('plg_content_shorturl'),
@@ -151,7 +155,7 @@ class plgContentShorturl extends JPlugin
 			
 			$db->setQuery($query);
 			$db->execute();
-			JLog::add(new JLogEntry(JText::sprintf('PLG_CONTENT_SHORTURL_ADDED', $shortUrl), JLog::INFO, 'plg_content_shorturl'));
+			JLog::add(new JLogEntry(JText::sprintf('PLG_CONTENT_SHORTURL_ADDED', $short_url), JLog::INFO, 'plg_content_shorturl'));
 		}
 		elseif (empty($link->new_url))
 		{
@@ -164,11 +168,11 @@ class plgContentShorturl extends JPlugin
 				;
 			$db->setQuery($query);
 			$db->execute();
-			JLog::add(new JLogEntry(JText::sprintf('PLG_CONTENT_SHORTURL_UPDATED', $shortUrl), JLog::INFO, 'plg_content_shorturl'));
+			JLog::add(new JLogEntry(JText::sprintf('PLG_CONTENT_SHORTURL_UPDATED', $short_url), JLog::INFO, 'plg_content_shorturl'));
 		}
 		else
 		{
-			JLog::add(new JLogEntry(JText::sprintf('PLG_CONTENT_SHORTURL_SAVE_FAILED', $shortUrl), JLog::WARNING, 'plg_content_shorturl'));
+			JLog::add(new JLogEntry(JText::sprintf('PLG_CONTENT_SHORTURL_SAVE_FAILED', $short_url), JLog::WARNING, 'plg_content_shorturl'));
 		}
 
 		return true;
@@ -209,8 +213,8 @@ class plgContentShorturl extends JPlugin
 		$url  = ContentHelperRoute::getArticleRoute($article->slug, $article->catid, $article->language);
 		JLog::add(new JLogEntry('url: '.$url, JLog::DEBUG, 'plg_content_shorturl'));
 		
-		$shortUrl = $this->_getShortUrl($url);
-		JLog::add(new JLogEntry('shorturl: '.$shortUrl, JLog::DEBUG, 'plg_content_shorturl'));
+		$short_url = $this->_getShortUrl($url, $article->language);
+		JLog::add(new JLogEntry('shorturl: '.$short_url, JLog::DEBUG, 'plg_content_shorturl'));
 		
 		$db    = JFactory::getDbo();
 		$query = $db->getQuery(true)
@@ -263,8 +267,8 @@ class plgContentShorturl extends JPlugin
     		$url  = ContentHelperRoute::getArticleRoute($data->slug, $data->catid, $data->language);
     		JLog::add(new JLogEntry('url: '.$url, JLog::DEBUG, 'plg_content_shorturl'));
     		
-    		$shortUrl = $this->_getShortUrl($url);
-    		JLog::add(new JLogEntry('shorturl: '.$shortUrl, JLog::DEBUG, 'plg_content_shorturl'));
+    		$short_url = $this->_getShortUrl($url, $data->language);
+    		JLog::add(new JLogEntry('shorturl: '.$short_url, JLog::DEBUG, 'plg_content_shorturl'));
     
     		// See if the current url exists in the database as a redirect.
     		$db    = JFactory::getDbo();
@@ -351,15 +355,15 @@ class plgContentShorturl extends JPlugin
 	    $url  = ContentHelperRoute::getArticleRoute($row->slug, $row->catid, $row->language);
 	    JLog::add(new JLogEntry('url: '.$url, JLog::DEBUG, 'plg_content_shorturl'));
 	    
-	    $shortUrl = $this->_getShortUrl($url);
-	    JLog::add(new JLogEntry('shorturl: '.$shortUrl, JLog::DEBUG, 'plg_content_shorturl'));
+	    $short_url = $this->_getShortUrl($url, $row->language);
+	    JLog::add(new JLogEntry('shorturl: '.$short_url, JLog::DEBUG, 'plg_content_shorturl'));
 	    
 	    $db    = JFactory::getDbo();
 	    $query = $db->getQuery(true)
-	    ->select($db->qn('published'))
-	    ->from($db->qn('#__redirect_links'))
-	    ->where($db->qn('old_url') . ' = ' . $db->q($shortUrl))
-	    ;
+    	    ->select($db->qn('published'))
+    	    ->from($db->qn('#__redirect_links'))
+    	    ->where($db->qn('old_url') . ' = ' . $db->q($short_url))
+    	    ;
 	    $db->setQuery($query, 0, 1);
 	    $link = $db->loadObject();
 	    if (!$link)
@@ -368,16 +372,54 @@ class plgContentShorturl extends JPlugin
 	        return;
 	    }
 	    
-	    $doc->addHeadLink($server . htmlspecialchars($shortUrl), 'shortlink');
+	    $doc->addHeadLink($server . htmlspecialchars($short_url), 'shortlink');
 	}
 
-    protected function _getShortUrl($url)
+    protected function _getShortUrl($url, $language = null)
     {
+        JLog::add(new JLogEntry(__METHOD__, JLog::DEBUG, 'plg_content_shorturl'));
+        JLog::add(new JLogEntry('url: ' . $url, JLog::DEBUG, 'plg_content_shorturl'));
+        JLog::add(new JLogEntry('language: ' . $language, JLog::DEBUG, 'plg_content_shorturl'));
+        
+        $lang_sef = '';
+        if (JPluginHelper::isEnabled('system', 'languagefilter'))
+        {
+            $default_language = JComponentHelper::getParams('com_languages')->get('site');
+            JLog::add(new JLogEntry('default language: '.$default_language, JLog::DEBUG, 'plg_content_shorturl'));
+            
+            $plugin = JPluginHelper::getPlugin('system', 'languagefilter');
+            $lang_params = new JRegistry($plugin->params);
+            $remove_default_prefix = $lang_params->get('remove_default_prefix', 0);
+            
+            if (($remove_default_prefix == 0) && ($language == '*'))
+            {
+                $language = $default_language;
+            }
+            
+            // Get all content languages.
+            $languages = LanguageHelper::getContentLanguages(array(0, 1));
+            
+            // Add language prefix
+            foreach ($languages as $lang_code => $item)
+            {
+                // Don't do for the reference language.
+                if ($lang_code == $language)
+                {
+                    if (($remove_default_prefix == 0) || ($lang_code != $default_language))
+                    {
+                        $lang_sef = $item->sef . '/';
+                    }
+                    break;
+                }
+            }
+        }
+
         $x = md5($url);
         while (is_numeric(substr($x, 0, 1)))
         {
             $x = md5($x);
         }
-        return rtrim(JURI::root(true), '/').'/'.substr($x, 0, $this->params->get('length', 4));
+
+        return rtrim(JURI::root(true), '/') . '/' . $lang_sef . substr($x, 0, $this->params->get('length', 4));
     }
 }
