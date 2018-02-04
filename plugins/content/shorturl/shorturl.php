@@ -1,16 +1,13 @@
 <?php
 /**
- * @version		3.5.0 plugins/content/shorturl/shorturl.php
- * 
- * @package		J2XML
+ * @package		Joomla Tools
  * @subpackage	plg_content_shorturl
- * @since		3.5.0
  *
  * @author		Helios Ciancio <info@eshiol.it>
  * @link		http://www.eshiol.it
- * @copyright	Copyright (C) 2016 Helios Ciancio. All Rights Reserved
+ * @copyright	Copyright (C) 2016, 2018 Helios Ciancio. All Rights Reserved
  * @license		http://www.gnu.org/licenses/gpl-3.0.html GNU/GPL v3
- * shorturll for Joomla! is free software. This version may have been modified 
+ * shorturl for Joomla! is free software. This version may have been modified 
  * pursuant to the GNU General Public License, and as distributed it includes 
  * or is derivative of works licensed under the GNU General Public License or
  * other free or open source software licenses.
@@ -23,6 +20,10 @@ require_once JPATH_ROOT . '/components/com_content/helpers/route.php';
 
 jimport('joomla.plugin.plugin');
 
+/**
+ * @version		3.8.0
+ * @since		3.5.0
+ */
 class plgContentShorturl extends JPlugin
 {
 	/**
@@ -33,21 +34,25 @@ class plgContentShorturl extends JPlugin
 	protected $autoloadLanguage = true;
 	
 	/**
-	 * CONSTRUCTOR
-	 * 
-	 * @param object $subject The object to observe
-	 * @param object $config  The object that holds the plugin parameters
+	 * Constructor
+	 *
+	 * @param  object  $subject  The object to observe
+	 * @param  array   $config   An array that holds the plugin configuration
 	 */
 	function __construct(&$subject, $config)
 	{
-		parent::__construct($subject, $config);		
-
-		if ($this->params->get('debug') || (defined('JDEBUG') && JDEBUG))
-		{
-			JLog::addLogger(array('text_file' => 'shorturl.php', 'extension' => 'plg_content_shorturl'), JLog::ALL, array('plg_content_shorturl'));
-		}
-		JLog::addLogger(array('logger' => 'messagequeue', 'extension' => 'plg_content_shorturl'), JLOG::ALL & ~JLOG::DEBUG, array('plg_content_shorturl'));
-		JLog::add(__METHOD__, JLog::DEBUG, 'plg_content_shorturl');
+	    parent::__construct($subject, $config);
+	    
+	    if ($this->params->get('debug') || defined('JDEBUG') && JDEBUG)
+	    {
+	        JLog::addLogger(array('text_file' => $this->params->get('log', 'eshiol.log.php'), 'extension' => 'plg_content_shorturl_file'), JLog::ALL, array('plg_content_shorturl'));
+	    }
+	    JLog::addLogger(array('logger' => (null !== $this->params->get('logger')) ? $this->params->get('logger') : 'messagequeue', 'extension' => 'plg_content_shorturl'), JLOG::ALL & ~JLOG::DEBUG, array('plg_content_shorturl'));
+	    if ($this->params->get('phpconsole') && class_exists('JLogLoggerPhpconsole'))
+	    {
+	        JLog::addLogger(array('logger' => 'phpconsole', 'extension' => 'plg_content_shorturl_phpconsole'),  JLOG::DEBUG, array('plg_content_shorturl'));
+	    }
+	    JLog::add(new JLogEntry(__METHOD__, JLog::DEBUG, 'plg_content_shorturl'));
 	}
 	
 	/**
@@ -68,7 +73,7 @@ class plgContentShorturl extends JPlugin
 			return true;
 		}		
 
-		JLog::add(__METHOD__, JLog::DEBUG, 'plg_content_shorturl');
+		JLog::add(new JLogEntry(__METHOD__, JLog::DEBUG, 'plg_content_shorturl'));
 		
 		if (JFactory::getApplication()->isAdmin())
 		{
@@ -85,17 +90,11 @@ class plgContentShorturl extends JPlugin
 		}
 		
 		$article->slug = $article->alias ? ($article->id . ':' . $article->alias) : $article->id;
-		$current  = ContentHelperRoute::getArticleRoute($article->slug, $article->catid, $article->language);
-		JLog::add(new JLogEntry('current: '.$current, JLog::DEBUG, 'plg_content_shorturl'));
+		$url  = ContentHelperRoute::getArticleRoute($article->slug, $article->catid, $article->language);
+		JLog::add(new JLogEntry('url: '.$url, JLog::DEBUG, 'plg_content_shorturl'));
 		
-		// Build the short url.
-		$x = md5($current);
-		while (is_numeric(substr($x, 0, 1)))
-		{
-			$x = md5($x);
-		}
-		$shorturl = rtrim(JURI::root(true), '/').'/'.substr($x, 0, $this->params->get('length', 4));
-		JLog::add(new JLogEntry('shorturl: '.$shorturl, JLog::DEBUG, 'plg_content_shorturl'));
+		$shortUrl = $this->_getShortUrl($url);
+		JLog::add(new JLogEntry('shorturl: '.$shortUrl, JLog::DEBUG, 'plg_content_shorturl'));
 		
 		// See if the current url exists in the database as a redirect.
 		$db    = JFactory::getDbo();
@@ -103,14 +102,14 @@ class plgContentShorturl extends JPlugin
 			->select($db->qn('old_url'))
 			->select($db->qn('published'))
 			->from($db->qn('#__redirect_links'))
-			->where($db->qn('new_url') . ' = ' . $db->q($current))
+			->where($db->qn('new_url') . ' = ' . $db->q($url))
 			->where($db->qn('comment') . ' = ' . $db->q('plg_content_shorturl'))
 			;
 		$db->setQuery($query, 0, 1);
 		$link = $db->loadObject();
 		if ($link)
 		{
-			JLog::add(JText::sprintf($link->published ? JText::_('PLG_CONTENT_SHORTURL_ENABLED') : JText::_('PLG_CONTENT_SHORTURL_ENABLED'), $link->old_url), JLog::INFO, 'plg_content_shorturl');
+			JLog::add(new JLogEntry(JText::sprintf($link->published ? JText::_('PLG_CONTENT_SHORTURL_ENABLED') : JText::_('PLG_CONTENT_SHORTURL_ENABLED'), $link->old_url), JLog::INFO, 'plg_content_shorturl'));
 			return true;
 		}
 		
@@ -118,7 +117,7 @@ class plgContentShorturl extends JPlugin
 			->select($db->qn('id'))
 			->select($db->qn('new_url'))
 			->from($db->qn('#__redirect_links'))
-			->where($db->qn('old_url').' = '.$db->q($shorturl))
+			->where($db->qn('old_url').' = '.$db->q($shortUrl))
 			;
 		$db->setQuery($query, 0, 1);
 		$link = $db->loadObject();
@@ -136,8 +135,8 @@ class plgContentShorturl extends JPlugin
 			);
 			
 			$values = array(
-				$db->q($shorturl),
-				$db->q($current),
+				$db->q($shortUrl),
+				$db->q($url),
 				$db->q(''),
 				$db->q('plg_content_shorturl'),
 				0,
@@ -152,24 +151,24 @@ class plgContentShorturl extends JPlugin
 			
 			$db->setQuery($query);
 			$db->execute();
-			JLog::add(new JLogEntry(JText::sprintf('PLG_CONTENT_SHORTURL_ADDED', $shorturl), JLog::INFO, 'plg_content_shorturl'));
+			JLog::add(new JLogEntry(JText::sprintf('PLG_CONTENT_SHORTURL_ADDED', $shortUrl), JLog::INFO, 'plg_content_shorturl'));
 		}
 		elseif (empty($link->new_url))
 		{
 			$query->clear()
 				->update($db->qn('#__redirect_links'))
-				->set($db->qn('new_url').' = '.$db->q($current))
+				->set($db->qn('new_url').' = '.$db->q($url))
 				->set($db->qn('published').' = true')
 				->set($db->qn('comment') . ' = ' . $db->q('plg_content_shorturl'))
 				->where($db->qn('id').' = '.(int)$link->id)
 				;
 			$db->setQuery($query);
 			$db->execute();
-			JLog::add(new JLogEntry(JText::sprintf('PLG_CONTENT_SHORTURL_UPDATED', $shorturl), JLog::INFO, 'plg_content_shorturl'));
+			JLog::add(new JLogEntry(JText::sprintf('PLG_CONTENT_SHORTURL_UPDATED', $shortUrl), JLog::INFO, 'plg_content_shorturl'));
 		}
 		else
 		{
-			JLog::add(new JLogEntry(JText::sprintf('PLG_CONTENT_SHORTURL_SAVE_FAILED', $shorturl), JLog::WARNING, 'plg_content_shorturl'));
+			JLog::add(new JLogEntry(JText::sprintf('PLG_CONTENT_SHORTURL_SAVE_FAILED', $shortUrl), JLog::WARNING, 'plg_content_shorturl'));
 		}
 
 		return true;
@@ -190,7 +189,7 @@ class plgContentShorturl extends JPlugin
 			return true;
 		}		
 
-		JLog::add(__METHOD__, JLog::DEBUG, 'plg_content_shorturl');
+		JLog::add(new JLogEntry(__METHOD__, JLog::DEBUG, 'plg_content_shorturl'));
 		
 		if (JFactory::getApplication()->isAdmin())
 		{
@@ -207,22 +206,16 @@ class plgContentShorturl extends JPlugin
 		}
 		
 		$article->slug = $article->alias ? ($article->id . ':' . $article->alias) : $article->id;
-		$current  = ContentHelperRoute::getArticleRoute($article->slug, $article->catid, $article->language);
-		JLog::add(new JLogEntry('current: '.$current, JLog::DEBUG, 'plg_content_shorturl'));
+		$url  = ContentHelperRoute::getArticleRoute($article->slug, $article->catid, $article->language);
+		JLog::add(new JLogEntry('url: '.$url, JLog::DEBUG, 'plg_content_shorturl'));
 		
-		// Build the short url.
-		$x = md5($current);
-		while (is_numeric(substr($x, 0, 1)))
-		{
-			$x = md5($x);
-		}
-		$shorturl = rtrim(JURI::root(true), '/').'/'.substr($x, 0, $this->params->get('length', 4));
-		JLog::add(new JLogEntry('shorturl: '.$shorturl, JLog::DEBUG, 'plg_content_shorturl'));
+		$shortUrl = $this->_getShortUrl($url);
+		JLog::add(new JLogEntry('shorturl: '.$shortUrl, JLog::DEBUG, 'plg_content_shorturl'));
 		
 		$db    = JFactory::getDbo();
 		$query = $db->getQuery(true)
 			->delete($db->qn('#__redirect_links'))
-			->where($db->qn('new_url') . ' = ' . $db->q($current))
+			->where($db->qn('new_url') . ' = ' . $db->q($url))
 			->where($db->qn('comment') . ' = ' . $db->q('plg_content_shorturl'))
 			;
 		$db->setQuery($query);
@@ -248,7 +241,7 @@ class plgContentShorturl extends JPlugin
 			return true;
 		}		
 
-		JLog::add(__METHOD__, JLog::DEBUG, 'plg_content_shorturl');
+		JLog::add(new JLogEntry(__METHOD__, JLog::DEBUG, 'plg_content_shorturl'));
 		
 		if (JFactory::getApplication()->isAdmin())
 		{
@@ -264,41 +257,127 @@ class plgContentShorturl extends JPlugin
 			return true;
 		}
 		
-		$data->slug = $data->alias ? ($data->id . ':' . $data->alias) : $data->id;
-		$current  = ContentHelperRoute::getArticleRoute($data->slug, $data->catid, $data->language);
-		JLog::add(new JLogEntry('current: '.$current, JLog::DEBUG, 'plg_content_shorturl'));
-		
-		// Build the short url.
-		$x = md5($current);
-		while (is_numeric(substr($x, 0, 1)))
+		if ($data)
 		{
-			$x = md5($x);
-		}
-		$shorturl = rtrim(JURI::root(true), '/').'/'.substr($x, 0, $this->params->get('length', 4));
-		JLog::add(new JLogEntry('shorturl: '.$shorturl, JLog::DEBUG, 'plg_content_shorturl'));
-
-		// See if the current url exists in the database as a redirect.
-		$db    = JFactory::getDbo();
-		$query = $db->getQuery(true)
-			->select($db->qn('old_url'))
-			->select($db->qn('published'))
-			->from($db->qn('#__redirect_links'))
-			->where($db->qn('new_url') . ' = ' . $db->q($current))
-			->where($db->qn('comment') . ' = ' . $db->q('plg_content_shorturl'))
-			;
-		JLog::add($query, JLog::DEBUG, 'plg_content_shorturl');
-		$db->setQuery($query, 0, 1);
-		$link = $db->loadObject();
-		if ($link)
-		{
-			if ($link->published == 1)
-				JLog::add(JText::sprintf(JText::_('PLG_CONTENT_SHORTURL_ENABLED'), $link->old_url), JLog::INFO, 'plg_content_shorturl');
-			elseif ($link->published == 0)
-				JLog::add(JText::sprintf(JText::_('PLG_CONTENT_SHORTURL_DISABLED'), $link->old_url), JLog::INFO, 'plg_content_shorturl');
-			elseif ($link->published == 2)
-				JLog::add(JText::sprintf(JText::_('PLG_CONTENT_SHORTURL_ARCHIVED'), $link->old_url), JLog::INFO, 'plg_content_shorturl');
-			elseif ($link->published == -2)
-				JLog::add(JText::sprintf(JText::_('PLG_CONTENT_SHORTURL_TRASHED'), $link->old_url), JLog::INFO, 'plg_content_shorturl');
+    		$data->slug = $data->alias ? ($data->id . ':' . $data->alias) : $data->id;
+    		$url  = ContentHelperRoute::getArticleRoute($data->slug, $data->catid, $data->language);
+    		JLog::add(new JLogEntry('url: '.$url, JLog::DEBUG, 'plg_content_shorturl'));
+    		
+    		$shortUrl = $this->_getShortUrl($url);
+    		JLog::add(new JLogEntry('shorturl: '.$shortUrl, JLog::DEBUG, 'plg_content_shorturl'));
+    
+    		// See if the current url exists in the database as a redirect.
+    		$db    = JFactory::getDbo();
+    		$query = $db->getQuery(true)
+    			->select($db->qn('old_url'))
+    			->select($db->qn('published'))
+    			->from($db->qn('#__redirect_links'))
+    			->where($db->qn('new_url') . ' = ' . $db->q($url))
+    			->where($db->qn('comment') . ' = ' . $db->q('plg_content_shorturl'))
+    			;
+    		JLog::add(new JLogEntry($query, JLog::DEBUG, 'plg_content_shorturl'));
+    		$db->setQuery($query, 0, 1);
+    		$link = $db->loadObject();
+    		if ($link)
+    		{
+    			if ($link->published == 1)
+    			{
+    				JLog::add(new JLogEntry(JText::sprintf(JText::_('PLG_CONTENT_SHORTURL_ENABLED'), $link->old_url), JLog::INFO, 'plg_content_shorturl'));
+    			}
+    			elseif ($link->published == 0)
+    			{
+    			    JLog::add(new JLogEntry(JText::sprintf(JText::_('PLG_CONTENT_SHORTURL_DISABLED'), $link->old_url), JLog::INFO, 'plg_content_shorturl'));
+    			}
+    			elseif ($link->published == 2)
+    			{
+    			    JLog::add(new JLogEntry(JText::sprintf(JText::_('PLG_CONTENT_SHORTURL_ARCHIVED'), $link->old_url), JLog::INFO, 'plg_content_shorturl'));
+    			}
+    			elseif ($link->published == -2)
+    			{
+    			    JLog::add(new JLogEntry(JText::sprintf(JText::_('PLG_CONTENT_SHORTURL_TRASHED'), $link->old_url), JLog::INFO, 'plg_content_shorturl'));
+    			}
+    		}
 		}
 	}
+
+	/**
+	 * Displays the toolbar at the top of the article
+	 *
+	 * @param   string   $context  The context of the content being passed to the plugin.
+	 * @param   mixed    &$row     An object with a "text" property
+	 * @param   mixed    $params   Additional parameters. See {@see PlgContentContent()}.
+	 * @param   integer  $page     Optional page number. Unused. Defaults to zero.
+	 *
+	 * @return  mixed  html string
+	 *
+	 * @since   3.8.0
+	 */
+	public function onContentBeforeDisplay($context, &$row, &$params, $page=0)
+	{
+	    JLog::add(new JLogEntry(__METHOD__, JLog::DEBUG, 'plg_content_shorturl'));
+
+	    if ($this->params->get('shortlink', 1) == 0)
+	    {
+	        JLog::add(new JLogEntry('shortlink disabled', JLog::DEBUG, 'plg_content_shorturl'));
+	        return;
+	    }
+
+	    $app    = JFactory::getApplication();
+	    $doc    = $app->getDocument();
+	    $server = JUri::getInstance()->toString(array('scheme', 'host', 'port'));
+	    
+	    if (!$app->isClient('site'))
+	    {
+	        JLog::add(new JLogEntry('client not allowed', JLog::DEBUG, 'plg_content_shorturl'));
+	        return;
+	    }
+	    elseif (!JPluginHelper::isEnabled('system', 'redirect'))
+	    {
+	        JLog::add(new JLogEntry('plugin system redirect not enabled', JLog::DEBUG, 'plg_content_shorturl'));
+	        return;
+	    }
+	    elseif ($doc->getType() !== 'html')
+	    {
+	        JLog::add(new JLogEntry('document type not allowed: ' . $doc->getType(), JLog::DEBUG, 'plg_content_shorturl'));
+	        return;
+	    }
+	    elseif ($context != 'com_content.article')
+	    {
+	        JLog::add(new JLogEntry('context not allowed: ' . $context, JLog::DEBUG, 'plg_content_shorturl'));
+	        return;
+	    }
+	    
+	    $row->slug = $row->alias ? ($row->id . ':' . $row->alias) : $row->id;
+	    $url  = ContentHelperRoute::getArticleRoute($row->slug, $row->catid, $row->language);
+	    JLog::add(new JLogEntry('url: '.$url, JLog::DEBUG, 'plg_content_shorturl'));
+	    
+	    $shortUrl = $this->_getShortUrl($url);
+	    JLog::add(new JLogEntry('shorturl: '.$shortUrl, JLog::DEBUG, 'plg_content_shorturl'));
+	    
+	    $db    = JFactory::getDbo();
+	    $query = $db->getQuery(true)
+	    ->select($db->qn('published'))
+	    ->from($db->qn('#__redirect_links'))
+	    ->where($db->qn('old_url') . ' = ' . $db->q($shortUrl))
+	    ;
+	    $db->setQuery($query, 0, 1);
+	    $link = $db->loadObject();
+	    if (!$link)
+	    {
+	        JLog::add(new JLogEntry('shorturl doesn\'t exist', JLog::DEBUG, 'plg_content_shorturl'));
+	        return;
+	    }
+	    
+	    $doc->addHeadLink($server . htmlspecialchars($shortUrl), 'shortlink');
+	}
+
+    protected function _getShortUrl($url)
+    {
+        $x = md5($url);
+        while (is_numeric(substr($x, 0, 1)))
+        {
+            $x = md5($x);
+        }
+        return rtrim(JURI::root(true), '/').'/'.substr($x, 0, $this->params->get('length', 4));
+    }
 }
