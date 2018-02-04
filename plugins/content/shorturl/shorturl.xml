@@ -9,6 +9,9 @@
   <authorUrl>www.eshiol.it</authorUrl>
   <version>3.8.0.1</version>
   <description>PLG_CONTENT_SHORTURL_XML_DESCRIPTION</description>
+  <updateservers>
+    <server type="extension" priority="2" name="eshiol.it - Short URL for Content">https://www.eshiol.it/files/plg_j2xml_anac/plg_j2xml_anac.xml</server>
+  </updateservers>
   <files>
     <filename plugin="shorturl">shorturl.php</filename>
   </files>
