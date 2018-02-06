@@ -1,13 +1,13 @@
 <?php
 /**
- * @package		Joomla Tools
+ * @package		Joomla Plugins
  * @subpackage	plg_content_shorturl
  *
  * @author		Helios Ciancio <info@eshiol.it>
  * @link		http://www.eshiol.it
  * @copyright	Copyright (C) 2016, 2018 Helios Ciancio. All Rights Reserved
  * @license		http://www.gnu.org/licenses/gpl-3.0.html GNU/GPL v3
- * shorturl for Joomla! is free software. This version may have been modified 
+ * Shorturl for Joomla! is free software. This version may have been modified 
  * pursuant to the GNU General Public License, and as distributed it includes 
  * or is derivative of works licensed under the GNU General Public License or
  * other free or open source software licenses.
@@ -17,6 +17,7 @@
 defined('_JEXEC') or die('Restricted access.');
 
 require_once JPATH_ROOT . '/components/com_content/helpers/route.php';
+require_once JPATH_ROOT . '/plugins/content/shorturl/helpers/shorturl.php';
 
 jimport('joomla.plugin.plugin');
 
@@ -96,7 +97,7 @@ class plgContentShorturl extends JPlugin
 		$url  = ContentHelperRoute::getArticleRoute($article->slug, $article->catid, $article->language);
 		JLog::add(new JLogEntry('url: '.$url, JLog::DEBUG, 'plg_content_shorturl'));
 		
-		$short_url = $this->_getShortUrl($url, $article->language);
+		$short_url = rtrim(JURI::root(true), '/') . ShorturlHelper::getShortUrl($url, $article->language);
 
 		JLog::add(new JLogEntry('shorturl: '.$short_url, JLog::DEBUG, 'plg_content_shorturl'));
 		
@@ -213,7 +214,7 @@ class plgContentShorturl extends JPlugin
 		$url  = ContentHelperRoute::getArticleRoute($article->slug, $article->catid, $article->language);
 		JLog::add(new JLogEntry('url: '.$url, JLog::DEBUG, 'plg_content_shorturl'));
 		
-		$short_url = $this->_getShortUrl($url, $article->language);
+		$short_url = rtrim(JURI::root(true), '/') . ShorturlHelper::getShortUrl($url, $article->language);
 		JLog::add(new JLogEntry('shorturl: '.$short_url, JLog::DEBUG, 'plg_content_shorturl'));
 		
 		$db    = JFactory::getDbo();
@@ -267,7 +268,7 @@ class plgContentShorturl extends JPlugin
     		$url  = ContentHelperRoute::getArticleRoute($data->slug, $data->catid, $data->language);
     		JLog::add(new JLogEntry('url: '.$url, JLog::DEBUG, 'plg_content_shorturl'));
     		
-    		$short_url = $this->_getShortUrl($url, $data->language);
+    		$short_url = rtrim(JURI::root(true), '/') . ShorturlHelper::getShortUrl($url, $data->language);
     		JLog::add(new JLogEntry('shorturl: '.$short_url, JLog::DEBUG, 'plg_content_shorturl'));
     
     		// See if the current url exists in the database as a redirect.
@@ -355,7 +356,7 @@ class plgContentShorturl extends JPlugin
 	    $url  = ContentHelperRoute::getArticleRoute($row->slug, $row->catid, $row->language);
 	    JLog::add(new JLogEntry('url: '.$url, JLog::DEBUG, 'plg_content_shorturl'));
 	    
-	    $short_url = $this->_getShortUrl($url, $row->language);
+	    $short_url = rtrim(JURI::root(true), '/') . ShorturlHelper::getShortUrl($url, $row->language);
 	    JLog::add(new JLogEntry('shorturl: '.$short_url, JLog::DEBUG, 'plg_content_shorturl'));
 	    
 	    $db    = JFactory::getDbo();
@@ -374,52 +375,4 @@ class plgContentShorturl extends JPlugin
 	    
 	    $doc->addHeadLink($server . htmlspecialchars($short_url), 'shortlink');
 	}
-
-    protected function _getShortUrl($url, $language = null)
-    {
-        JLog::add(new JLogEntry(__METHOD__, JLog::DEBUG, 'plg_content_shorturl'));
-        JLog::add(new JLogEntry('url: ' . $url, JLog::DEBUG, 'plg_content_shorturl'));
-        JLog::add(new JLogEntry('language: ' . $language, JLog::DEBUG, 'plg_content_shorturl'));
-        
-        $lang_sef = '';
-        if (JPluginHelper::isEnabled('system', 'languagefilter'))
-        {
-            $default_language = JComponentHelper::getParams('com_languages')->get('site');
-            JLog::add(new JLogEntry('default language: '.$default_language, JLog::DEBUG, 'plg_content_shorturl'));
-            
-            $plugin = JPluginHelper::getPlugin('system', 'languagefilter');
-            $lang_params = new JRegistry($plugin->params);
-            $remove_default_prefix = $lang_params->get('remove_default_prefix', 0);
-            
-            if (($remove_default_prefix == 0) && ($language == '*'))
-            {
-                $language = $default_language;
-            }
-            
-            // Get all content languages.
-            $languages = LanguageHelper::getContentLanguages(array(0, 1));
-            
-            // Add language prefix
-            foreach ($languages as $lang_code => $item)
-            {
-                // Don't do for the reference language.
-                if ($lang_code == $language)
-                {
-                    if (($remove_default_prefix == 0) || ($lang_code != $default_language))
-                    {
-                        $lang_sef = $item->sef . '/';
-                    }
-                    break;
-                }
-            }
-        }
-
-        $x = md5($url);
-        while (is_numeric(substr($x, 0, 1)))
-        {
-            $x = md5($x);
-        }
-
-        return rtrim(JURI::root(true), '/') . '/' . $lang_sef . substr($x, 0, $this->params->get('length', 4));
-    }
 }
