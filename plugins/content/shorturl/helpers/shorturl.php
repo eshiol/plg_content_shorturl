@@ -47,7 +47,7 @@ abstract class ShorturlHelper
         if (JPluginHelper::isEnabled('system', 'languagefilter'))
         {
             $default_language = JComponentHelper::getParams('com_languages')->get('site');
-            JLog::add(new JLogEntry('default language: '.$default_language, JLog::DEBUG, 'plg_content_shorturl'));
+            JLog::add(new JLogEntry('default language: ' . $default_language, JLog::DEBUG, 'plg_content_shorturl'));
 
             $plugin = JPluginHelper::getPlugin('system', 'languagefilter');
             $lang_params = new JRegistry($plugin->params);

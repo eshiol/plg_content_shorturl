@@ -92,14 +92,14 @@ class plgContentShorturl extends JPlugin
 		{
 			return true;
 		}
-		
+
 		$article->slug = $article->alias ? ($article->id . ':' . $article->alias) : $article->id;
 		$url  = ContentHelperRoute::getArticleRoute($article->slug, $article->catid, $article->language);
-		JLog::add(new JLogEntry('url: '.$url, JLog::DEBUG, 'plg_content_shorturl'));
+		JLog::add(new JLogEntry('url: ' . $url, JLog::DEBUG, 'plg_content_shorturl'));
 		
 		$short_url = rtrim(JURI::root(true), '/') . ShorturlHelper::getShortUrl($url, $article->language);
 
-		JLog::add(new JLogEntry('shorturl: '.$short_url, JLog::DEBUG, 'plg_content_shorturl'));
+		JLog::add(new JLogEntry('shorturl: ' . $short_url, JLog::DEBUG, 'plg_content_shorturl'));
 		
 		// See if the current url exists in the database as a redirect.
 		$db    = JFactory::getDbo();
@@ -122,7 +122,7 @@ class plgContentShorturl extends JPlugin
 			->select($db->qn('id'))
 			->select($db->qn('new_url'))
 			->from($db->qn('#__redirect_links'))
-			->where($db->qn('old_url').' = '.$db->q($short_url))
+			->where($db->qn('old_url') . ' = ' . $db->q($short_url))
 			;
 		$db->setQuery($query, 0, 1);
 		$link = $db->loadObject();
@@ -162,10 +162,10 @@ class plgContentShorturl extends JPlugin
 		{
 			$query->clear()
 				->update($db->qn('#__redirect_links'))
-				->set($db->qn('new_url').' = '.$db->q($url))
-				->set($db->qn('published').' = true')
+				->set($db->qn('new_url') . ' = ' . $db->q($url))
+				->set($db->qn('published') . ' = true')
 				->set($db->qn('comment') . ' = ' . $db->q('plg_content_shorturl'))
-				->where($db->qn('id').' = '.(int)$link->id)
+				->where($db->qn('id') . ' = ' . (int) $link->id)
 				;
 			$db->setQuery($query);
 			$db->execute();
@@ -212,10 +212,10 @@ class plgContentShorturl extends JPlugin
 		
 		$article->slug = $article->alias ? ($article->id . ':' . $article->alias) : $article->id;
 		$url  = ContentHelperRoute::getArticleRoute($article->slug, $article->catid, $article->language);
-		JLog::add(new JLogEntry('url: '.$url, JLog::DEBUG, 'plg_content_shorturl'));
+		JLog::add(new JLogEntry('url: ' . $url, JLog::DEBUG, 'plg_content_shorturl'));
 		
 		$short_url = rtrim(JURI::root(true), '/') . ShorturlHelper::getShortUrl($url, $article->language);
-		JLog::add(new JLogEntry('shorturl: '.$short_url, JLog::DEBUG, 'plg_content_shorturl'));
+		JLog::add(new JLogEntry('shorturl: ' . $short_url, JLog::DEBUG, 'plg_content_shorturl'));
 		
 		$db    = JFactory::getDbo();
 		$query = $db->getQuery(true)
@@ -266,10 +266,10 @@ class plgContentShorturl extends JPlugin
 		{
     		$data->slug = $data->alias ? ($data->id . ':' . $data->alias) : $data->id;
     		$url  = ContentHelperRoute::getArticleRoute($data->slug, $data->catid, $data->language);
-    		JLog::add(new JLogEntry('url: '.$url, JLog::DEBUG, 'plg_content_shorturl'));
+    		JLog::add(new JLogEntry('url: ' . $url, JLog::DEBUG, 'plg_content_shorturl'));
     		
     		$short_url = rtrim(JURI::root(true), '/') . ShorturlHelper::getShortUrl($url, $data->language);
-    		JLog::add(new JLogEntry('shorturl: '.$short_url, JLog::DEBUG, 'plg_content_shorturl'));
+    		JLog::add(new JLogEntry('shorturl: ' . $short_url, JLog::DEBUG, 'plg_content_shorturl'));
     
     		// See if the current url exists in the database as a redirect.
     		$db    = JFactory::getDbo();
@@ -354,10 +354,10 @@ class plgContentShorturl extends JPlugin
 	    
 	    $row->slug = $row->alias ? ($row->id . ':' . $row->alias) : $row->id;
 	    $url  = ContentHelperRoute::getArticleRoute($row->slug, $row->catid, $row->language);
-	    JLog::add(new JLogEntry('url: '.$url, JLog::DEBUG, 'plg_content_shorturl'));
+	    JLog::add(new JLogEntry('url: ' . $url, JLog::DEBUG, 'plg_content_shorturl'));
 	    
 	    $short_url = rtrim(JURI::root(true), '/') . ShorturlHelper::getShortUrl($url, $row->language);
-	    JLog::add(new JLogEntry('shorturl: '.$short_url, JLog::DEBUG, 'plg_content_shorturl'));
+	    JLog::add(new JLogEntry('shorturl: ' . $short_url, JLog::DEBUG, 'plg_content_shorturl'));
 	    
 	    $db    = JFactory::getDbo();
 	    $query = $db->getQuery(true)
