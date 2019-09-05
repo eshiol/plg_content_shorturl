@@ -2,12 +2,12 @@
 <extension version="3" type="plugin" group="content" method="upgrade">
   <name>PLG_CONTENT_SHORTURL</name>
   <author>Helios Ciancio</author>
-  <creationDate>February 2018</creationDate>
+  <creationDate>August 2018</creationDate>
   <copyright>(C) 2016, 2018 Helios Ciancio. All rights reserved.</copyright>
   <license>http://www.gnu.org/licenses/gpl-3.0.html GNU/GPL v3</license>
   <authorEmail>info@eshiol.it</authorEmail>
   <authorUrl>www.eshiol.it</authorUrl>
-  <version>3.8.0.2</version>
+  <version>3.8.1.4</version>
   <description>PLG_CONTENT_SHORTURL_XML_DESCRIPTION</description>
   <updateservers>
     <server type="extension" priority="2" name="eshiol.it - Short URL for Content">https://www.eshiol.it/files/plg_j2xml_anac/plg_j2xml_anac.xml</server>
@@ -25,23 +25,23 @@
   <config>
     <fields name="params">
       <fieldset name="basic">
-        <field name="length" type="number" filter="integer" label="PLG_CONTENT_SHORTURL_FIELD_LENGTH_LABEL" description="PLG_CONTENT_SHORTURL_FIELD_LENGTH_DESC" min="3" max="32" step="1" default="4"></field>
-		<field name="shortlink" type="radio" default="1" class="btn-group btn-group-yesno" description="PLG_CONTENT_SHORTURL_FIELD_SHORTLINK_DESC" label="PLG_CONTENT_SHORTURL_FIELD_SHORTLINK_LABEL">
-		  <option value="1">JYES</option>
-		  <option value="0">JNO</option>
-		</field>
+        <field name="length" type="number" filter="integer" label="PLG_CONTENT_SHORTURL_FIELD_LENGTH_LABEL" description="PLG_CONTENT_SHORTURL_FIELD_LENGTH_DESC" min="3" max="32" step="1" default="4"/>
+        <field name="shortlink" type="radio" default="1" class="btn-group btn-group-yesno" description="PLG_CONTENT_SHORTURL_FIELD_SHORTLINK_DESC" label="PLG_CONTENT_SHORTURL_FIELD_SHORTLINK_LABEL">
+          <option value="1">JYES</option>
+          <option value="0">JNO</option>
+        </field>
       </fieldset>
       <fieldset name="debug" label="PLG_CONTENT_SHORTURL_DEBUG_LABEL">
-		<field name="debug" type="radio" default="0" class="btn-group btn-group-yesno" description="PLG_CONTENT_SHORTURL_DEBUG_SYSTEM_DESC" label="PLG_CONTENT_SHORTURL_DEBUG_SYSTEM_LABEL">
-		  <option value="1">JYES</option>
-		  <option value="0">JNO</option>
-		</field>
-		<field name="log" type="text" label="PLG_CONTENT_SHORTURL_DEBUG_FILENAME_LABEL" description="PLG_CONTENT_SHORTURL_DEBUG_FILENAME_DESC" default="eshiol.log.php" showon="debug:1"/>
-		<field name="phpconsole" type="radio" class="btn-group btn-group-yesno" default="0" description="PLG_CONTENT_SHORTURL_DEBUG_PHPCONSOLE_DESC" label="PLG_CONTENT_SHORTURL_DEBUG_PHPCONSOLE_LABEL">
-		  <option value="1">JYES</option>
-		  <option value="0">JNO</option>
-		</field>
-	  </fieldset>
+        <field name="debug" type="radio" default="0" class="btn-group btn-group-yesno" description="PLG_CONTENT_SHORTURL_DEBUG_SYSTEM_DESC" label="PLG_CONTENT_SHORTURL_DEBUG_SYSTEM_LABEL">
+          <option value="1">JYES</option>
+          <option value="0">JNO</option>
+        </field>
+        <field name="log" type="text" label="PLG_CONTENT_SHORTURL_DEBUG_FILENAME_LABEL" description="PLG_CONTENT_SHORTURL_DEBUG_FILENAME_DESC" default="eshiol.log.php" showon="debug:1"/>
+        <field name="phpconsole" type="radio" class="btn-group btn-group-yesno" default="0" description="PLG_CONTENT_SHORTURL_DEBUG_PHPCONSOLE_DESC" label="PLG_CONTENT_SHORTURL_DEBUG_PHPCONSOLE_LABEL">
+          <option value="1">JYES</option>
+          <option value="0">JNO</option>
+        </field>
+      </fieldset>
     </fields>
   </config>
 </extension>

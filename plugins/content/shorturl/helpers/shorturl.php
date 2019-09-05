@@ -48,19 +48,19 @@ abstract class ShorturlHelper
         {
             $default_language = JComponentHelper::getParams('com_languages')->get('site');
             JLog::add(new JLogEntry('default language: '.$default_language, JLog::DEBUG, 'plg_content_shorturl'));
-            
+
             $plugin = JPluginHelper::getPlugin('system', 'languagefilter');
             $lang_params = new JRegistry($plugin->params);
             $remove_default_prefix = $lang_params->get('remove_default_prefix', 0);
-            
+
             if (($remove_default_prefix == 0) && ($language == '*'))
             {
                 $language = $default_language;
             }
-            
+
             // Get all content languages.
             $languages = LanguageHelper::getContentLanguages(array(0, 1));
-            
+
             // Add language prefix
             foreach ($languages as $lang_code => $item)
             {
@@ -82,7 +82,7 @@ abstract class ShorturlHelper
             $x = md5($x);
         }
 
-        return $lang_sef . substr($x, 0, $params->get('length', 4));
+        return '/' . $lang_sef . substr($x, 0, $params->get('length', 4));
     }
     
     public static function urlExists($url)
