@@ -104,11 +104,11 @@ class plgContentShorturl extends JPlugin
 		// See if the current url exists in the database as a redirect.
 		$db    = JFactory::getDbo();
 		$query = $db->getQuery(true)
-			->select($db->qn('old_url'))
-			->select($db->qn('published'))
-			->from($db->qn('#__redirect_links'))
-			->where($db->qn('new_url') . ' = ' . $db->q($url))
-			->where($db->qn('comment') . ' = ' . $db->q('plg_content_shorturl'))
+			->select($db->quoteName('old_url'))
+			->select($db->quoteName('published'))
+			->from($db->quoteName('#__redirect_links'))
+			->where($db->quoteName('new_url') . ' = ' . $db->quote($url))
+			->where($db->quoteName('comment') . ' = ' . $db->quote('plg_content_shorturl'))
 			;
 		$db->setQuery($query, 0, 1);
 		$link = $db->loadObject();
@@ -119,10 +119,10 @@ class plgContentShorturl extends JPlugin
 		}
 		
 		$query->clear()
-			->select($db->qn('id'))
-			->select($db->qn('new_url'))
-			->from($db->qn('#__redirect_links'))
-			->where($db->qn('old_url') . ' = ' . $db->q($short_url))
+			->select($db->quoteName('id'))
+			->select($db->quoteName('new_url'))
+			->from($db->quoteName('#__redirect_links'))
+			->where($db->quoteName('old_url') . ' = ' . $db->quote($short_url))
 			;
 		$db->setQuery($query, 0, 1);
 		$link = $db->loadObject();
@@ -130,27 +130,27 @@ class plgContentShorturl extends JPlugin
 		if (!$link)
 		{
 			$columns = array(
-				$db->qn('old_url'),
-				$db->qn('new_url'),
-				$db->qn('referer'),
-				$db->qn('comment'),
-				$db->qn('hits'),
-				$db->qn('published'),
-				$db->qn('created_date')
+				$db->quoteName('old_url'),
+				$db->quoteName('new_url'),
+				$db->quoteName('referer'),
+				$db->quoteName('comment'),
+				$db->quoteName('hits'),
+				$db->quoteName('published'),
+				$db->quoteName('created_date')
 			);
 			
 			$values = array(
-				$db->q($short_url),
-				$db->q($url),
-				$db->q(''),
-				$db->q('plg_content_shorturl'),
+				$db->quote($short_url),
+				$db->quote($url),
+				$db->quote(''),
+				$db->quote('plg_content_shorturl'),
 				0,
 				1,
-				$db->q(JFactory::getDate()->toSql())
+				$db->quote(JFactory::getDate()->toSql())
 			);
 			
 			$query->clear()
-				->insert($db->qn('#__redirect_links'), false)
+				->insert($db->quoteName('#__redirect_links'), false)
 				->columns($columns)
 				->values(implode(', ', $values));
 			
@@ -161,11 +161,11 @@ class plgContentShorturl extends JPlugin
 		elseif (empty($link->new_url))
 		{
 			$query->clear()
-				->update($db->qn('#__redirect_links'))
-				->set($db->qn('new_url') . ' = ' . $db->q($url))
-				->set($db->qn('published') . ' = true')
-				->set($db->qn('comment') . ' = ' . $db->q('plg_content_shorturl'))
-				->where($db->qn('id') . ' = ' . (int) $link->id)
+				->update($db->quoteName('#__redirect_links'))
+				->set($db->quoteName('new_url') . ' = ' . $db->quote($url))
+				->set($db->quoteName('published') . ' = true')
+				->set($db->quoteName('comment') . ' = ' . $db->quote('plg_content_shorturl'))
+				->where($db->quoteName('id') . ' = ' . (int) $link->id)
 				;
 			$db->setQuery($query);
 			$db->execute();
@@ -219,9 +219,9 @@ class plgContentShorturl extends JPlugin
 		
 		$db    = JFactory::getDbo();
 		$query = $db->getQuery(true)
-			->delete($db->qn('#__redirect_links'))
-			->where($db->qn('new_url') . ' = ' . $db->q($url))
-			->where($db->qn('comment') . ' = ' . $db->q('plg_content_shorturl'))
+			->delete($db->quoteName('#__redirect_links'))
+			->where($db->quoteName('new_url') . ' = ' . $db->quote($url))
+			->where($db->quoteName('comment') . ' = ' . $db->quote('plg_content_shorturl'))
 			;
 		$db->setQuery($query);
 		$db->execute();
@@ -274,11 +274,11 @@ class plgContentShorturl extends JPlugin
     		// See if the current url exists in the database as a redirect.
     		$db    = JFactory::getDbo();
     		$query = $db->getQuery(true)
-    			->select($db->qn('old_url'))
-    			->select($db->qn('published'))
-    			->from($db->qn('#__redirect_links'))
-    			->where($db->qn('new_url') . ' = ' . $db->q($url))
-    			->where($db->qn('comment') . ' = ' . $db->q('plg_content_shorturl'))
+    			->select($db->quoteName('old_url'))
+    			->select($db->quoteName('published'))
+    			->from($db->quoteName('#__redirect_links'))
+    			->where($db->quoteName('new_url') . ' = ' . $db->quote($url))
+    			->where($db->quoteName('comment') . ' = ' . $db->quote('plg_content_shorturl'))
     			;
     		JLog::add(new JLogEntry($query, JLog::DEBUG, 'plg_content_shorturl'));
     		$db->setQuery($query, 0, 1);
@@ -361,9 +361,9 @@ class plgContentShorturl extends JPlugin
 	    
 	    $db    = JFactory::getDbo();
 	    $query = $db->getQuery(true)
-    	    ->select($db->qn('published'))
-    	    ->from($db->qn('#__redirect_links'))
-    	    ->where($db->qn('old_url') . ' = ' . $db->q($short_url))
+    	    ->select($db->quoteName('published'))
+    	    ->from($db->quoteName('#__redirect_links'))
+    	    ->where($db->quoteName('old_url') . ' = ' . $db->quote($short_url))
     	    ;
 	    $db->setQuery($query, 0, 1);
 	    $link = $db->loadObject();

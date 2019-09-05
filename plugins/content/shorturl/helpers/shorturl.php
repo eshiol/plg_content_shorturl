@@ -104,10 +104,10 @@ abstract class ShorturlHelper
         $db    = JFactory::getDbo();
         $query = $db->getQuery(true)
             ->select('*')
-            ->from($db->qn('#__redirect_links'))
-            ->where($db->qn('old_url') . ' = ' . $db->q($url))
-            ->where($db->qn('comment') . ' = ' . $db->q('plg_content_shorturl'))
-            ->where($db->qn('published') . ' = 1');
+            ->from($db->quoteName('#__redirect_links'))
+            ->where($db->quoteName('old_url') . ' = ' . $db->quote($url))
+            ->where($db->quoteName('comment') . ' = ' . $db->quote('plg_content_shorturl'))
+            ->where($db->quoteName('published') . ' = 1');
         JLog::add(new JLogEntry($query, JLog::DEBUG, 'plg_content_shorturl'));
         $db->setQuery($query, 0, 1);
         return $db->loadObject() ? true : false;
