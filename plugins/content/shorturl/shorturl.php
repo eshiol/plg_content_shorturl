@@ -5,8 +5,8 @@
  *
  * @author		Helios Ciancio <info@eshiol.it>
  * @link		http://www.eshiol.it
- * @copyright	Copyright (C) 2016, 2018 Helios Ciancio. All Rights Reserved
- * @license		http://www.gnu.org/licenses/gpl-3.0.html GNU/GPL v3
+ * @copyright	Copyright (C) 2016 - 2019 Helios Ciancio. All Rights Reserved
+ * @license		http://www.gnu.org/licenses/gpl-3.0.html GNU/GPL v3<
  * Shorturl for Joomla! is free software. This version may have been modified 
  * pursuant to the GNU General Public License, and as distributed it includes 
  * or is derivative of works licensed under the GNU General Public License or
@@ -25,7 +25,7 @@ use Joomla\CMS\Language\LanguageHelper;
 
 
 /**
- * @version		3.8.0
+ * @version		3.8.2
  * @since		3.5.0
  */
 class plgContentShorturl extends JPlugin
@@ -262,7 +262,7 @@ class plgContentShorturl extends JPlugin
 			return true;
 		}
 		
-		if ($data)
+		if (!empty($data))
 		{
     		$data->slug = $data->alias ? ($data->id . ':' . $data->alias) : $data->id;
     		$url  = ContentHelperRoute::getArticleRoute($data->slug, $data->catid, $data->language);
