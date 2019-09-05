@@ -81,14 +81,14 @@ class plgContentShorturl extends JPlugin
 		
 		if (JFactory::getApplication()->isAdmin())
 		{
-			$allowed_contexts = array('com_content.article');
+			$allowedContexts = array('com_content.article');
 		}
 		else
 		{
-			$allowed_contexts = array('com_content.form');
+			$allowedContexts = array('com_content.form');
 		}
 
-		if (!in_array($context, $allowed_contexts))
+		if (!in_array($context, $allowedContexts))
 		{
 			return true;
 		}
@@ -97,9 +97,9 @@ class plgContentShorturl extends JPlugin
 		$url  = ContentHelperRoute::getArticleRoute($article->slug, $article->catid, $article->language);
 		JLog::add(new JLogEntry('url: ' . $url, JLog::DEBUG, 'plg_content_shorturl'));
 		
-		$short_url = rtrim(JURI::root(true), '/') . ShorturlHelper::getShortUrl($url, $article->language);
+		$shortUrl = rtrim(JURI::root(true), '/') . ShorturlHelper::getShortUrl($url, $article->language);
 
-		JLog::add(new JLogEntry('shorturl: ' . $short_url, JLog::DEBUG, 'plg_content_shorturl'));
+		JLog::add(new JLogEntry('shorturl: ' . $shortUrl, JLog::DEBUG, 'plg_content_shorturl'));
 		
 		// See if the current url exists in the database as a redirect.
 		$db    = JFactory::getDbo();
@@ -122,7 +122,7 @@ class plgContentShorturl extends JPlugin
 			->select($db->quoteName('id'))
 			->select($db->quoteName('new_url'))
 			->from($db->quoteName('#__redirect_links'))
-			->where($db->quoteName('old_url') . ' = ' . $db->quote($short_url))
+			->where($db->quoteName('old_url') . ' = ' . $db->quote($shortUrl))
 			;
 		$db->setQuery($query, 0, 1);
 		$link = $db->loadObject();
@@ -140,7 +140,7 @@ class plgContentShorturl extends JPlugin
 			);
 			
 			$values = array(
-				$db->quote($short_url),
+				$db->quote($shortUrl),
 				$db->quote($url),
 				$db->quote(''),
 				$db->quote('plg_content_shorturl'),
@@ -156,7 +156,7 @@ class plgContentShorturl extends JPlugin
 			
 			$db->setQuery($query);
 			$db->execute();
-			JLog::add(new JLogEntry(JText::sprintf('PLG_CONTENT_SHORTURL_ADDED', $short_url), JLog::INFO, 'plg_content_shorturl'));
+			JLog::add(new JLogEntry(JText::sprintf('PLG_CONTENT_SHORTURL_ADDED', $shortUrl), JLog::INFO, 'plg_content_shorturl'));
 		}
 		elseif (empty($link->new_url))
 		{
@@ -169,11 +169,11 @@ class plgContentShorturl extends JPlugin
 				;
 			$db->setQuery($query);
 			$db->execute();
-			JLog::add(new JLogEntry(JText::sprintf('PLG_CONTENT_SHORTURL_UPDATED', $short_url), JLog::INFO, 'plg_content_shorturl'));
+			JLog::add(new JLogEntry(JText::sprintf('PLG_CONTENT_SHORTURL_UPDATED', $shortUrl), JLog::INFO, 'plg_content_shorturl'));
 		}
 		else
 		{
-			JLog::add(new JLogEntry(JText::sprintf('PLG_CONTENT_SHORTURL_SAVE_FAILED', $short_url), JLog::WARNING, 'plg_content_shorturl'));
+			JLog::add(new JLogEntry(JText::sprintf('PLG_CONTENT_SHORTURL_SAVE_FAILED', $shortUrl), JLog::WARNING, 'plg_content_shorturl'));
 		}
 
 		return true;
@@ -198,14 +198,14 @@ class plgContentShorturl extends JPlugin
 		
 		if (JFactory::getApplication()->isAdmin())
 		{
-			$allowed_contexts = array('com_content.article');
+			$allowedContexts = array('com_content.article');
 		}
 		else
 		{
-			$allowed_contexts = array('com_content.form');
+			$allowedContexts = array('com_content.form');
 		}
 
-		if (!in_array($context, $allowed_contexts))
+		if (!in_array($context, $allowedContexts))
 		{
 			return true;
 		}
@@ -214,8 +214,8 @@ class plgContentShorturl extends JPlugin
 		$url  = ContentHelperRoute::getArticleRoute($article->slug, $article->catid, $article->language);
 		JLog::add(new JLogEntry('url: ' . $url, JLog::DEBUG, 'plg_content_shorturl'));
 		
-		$short_url = rtrim(JURI::root(true), '/') . ShorturlHelper::getShortUrl($url, $article->language);
-		JLog::add(new JLogEntry('shorturl: ' . $short_url, JLog::DEBUG, 'plg_content_shorturl'));
+		$shortUrl = rtrim(JURI::root(true), '/') . ShorturlHelper::getShortUrl($url, $article->language);
+		JLog::add(new JLogEntry('shorturl: ' . $shortUrl, JLog::DEBUG, 'plg_content_shorturl'));
 		
 		$db    = JFactory::getDbo();
 		$query = $db->getQuery(true)
@@ -250,14 +250,14 @@ class plgContentShorturl extends JPlugin
 		
 		if (JFactory::getApplication()->isAdmin())
 		{
-			$allowed_contexts = array('com_content.article');
+			$allowedContexts = array('com_content.article');
 		}
 		else
 		{
-			$allowed_contexts = array('com_content.form');
+			$allowedContexts = array('com_content.form');
 		}
 
-		if (!in_array($form->getName(), $allowed_contexts))
+		if (!in_array($form->getName(), $allowedContexts))
 		{
 			return true;
 		}
@@ -268,8 +268,8 @@ class plgContentShorturl extends JPlugin
     		$url  = ContentHelperRoute::getArticleRoute($data->slug, $data->catid, $data->language);
     		JLog::add(new JLogEntry('url: ' . $url, JLog::DEBUG, 'plg_content_shorturl'));
     		
-    		$short_url = rtrim(JURI::root(true), '/') . ShorturlHelper::getShortUrl($url, $data->language);
-    		JLog::add(new JLogEntry('shorturl: ' . $short_url, JLog::DEBUG, 'plg_content_shorturl'));
+    		$shortUrl = rtrim(JURI::root(true), '/') . ShorturlHelper::getShortUrl($url, $data->language);
+    		JLog::add(new JLogEntry('shorturl: ' . $shortUrl, JLog::DEBUG, 'plg_content_shorturl'));
     
     		// See if the current url exists in the database as a redirect.
     		$db    = JFactory::getDbo();
@@ -356,14 +356,14 @@ class plgContentShorturl extends JPlugin
 	    $url  = ContentHelperRoute::getArticleRoute($row->slug, $row->catid, $row->language);
 	    JLog::add(new JLogEntry('url: ' . $url, JLog::DEBUG, 'plg_content_shorturl'));
 	    
-	    $short_url = rtrim(JURI::root(true), '/') . ShorturlHelper::getShortUrl($url, $row->language);
-	    JLog::add(new JLogEntry('shorturl: ' . $short_url, JLog::DEBUG, 'plg_content_shorturl'));
+	    $shortUrl = rtrim(JURI::root(true), '/') . ShorturlHelper::getShortUrl($url, $row->language);
+	    JLog::add(new JLogEntry('shorturl: ' . $shortUrl, JLog::DEBUG, 'plg_content_shorturl'));
 	    
 	    $db    = JFactory::getDbo();
 	    $query = $db->getQuery(true)
     	    ->select($db->quoteName('published'))
     	    ->from($db->quoteName('#__redirect_links'))
-    	    ->where($db->quoteName('old_url') . ' = ' . $db->quote($short_url))
+    	    ->where($db->quoteName('old_url') . ' = ' . $db->quote($shortUrl))
     	    ;
 	    $db->setQuery($query, 0, 1);
 	    $link = $db->loadObject();
@@ -373,6 +373,6 @@ class plgContentShorturl extends JPlugin
 	        return;
 	    }
 	    
-	    $doc->addHeadLink($server . htmlspecialchars($short_url), 'shortlink');
+	    $doc->addHeadLink($server . htmlspecialchars($shortUrl), 'shortlink');
 	}
 }

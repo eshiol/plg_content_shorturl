@@ -43,33 +43,33 @@ abstract class ShorturlHelper
         JLog::add(new JLogEntry('url: ' . $url, JLog::DEBUG, 'plg_content_shorturl'));
         JLog::add(new JLogEntry('language: ' . $language, JLog::DEBUG, 'plg_content_shorturl'));
 
-        $lang_sef = '';
+        $langSef = '';
         if (JPluginHelper::isEnabled('system', 'languagefilter'))
         {
-            $default_language = JComponentHelper::getParams('com_languages')->get('site');
-            JLog::add(new JLogEntry('default language: ' . $default_language, JLog::DEBUG, 'plg_content_shorturl'));
+            $defaultLanguage = JComponentHelper::getParams('com_languages')->get('site');
+            JLog::add(new JLogEntry('default language: ' . $defaultLanguage, JLog::DEBUG, 'plg_content_shorturl'));
 
             $plugin = JPluginHelper::getPlugin('system', 'languagefilter');
-            $lang_params = new JRegistry($plugin->params);
-            $remove_default_prefix = $lang_params->get('remove_default_prefix', 0);
+            $langParams = new JRegistry($plugin->params);
+            $removeDefaultPrefix = $langParams->get('remove_default_prefix', 0);
 
-            if (($remove_default_prefix == 0) && ($language == '*'))
+            if (($removeDefaultPrefix == 0) && ($language == '*'))
             {
-                $language = $default_language;
+                $language = $defaultLanguage;
             }
 
             // Get all content languages.
             $languages = LanguageHelper::getContentLanguages(array(0, 1));
 
             // Add language prefix
-            foreach ($languages as $lang_code => $item)
+            foreach ($languages as $langCode => $item)
             {
                 // Don't do for the reference language.
-                if ($lang_code == $language)
+                if ($langCode == $language)
                 {
-                    if (($remove_default_prefix == 0) || ($lang_code != $default_language))
+                    if (($removeDefaultPrefix == 0) || ($langCode != $defaultLanguage))
                     {
-                        $lang_sef = $item->sef . '/';
+                        $langSef = $item->sef . '/';
                     }
                     break;
                 }
@@ -82,7 +82,7 @@ abstract class ShorturlHelper
             $x = md5($x);
         }
 
-        return '/' . $lang_sef . substr($x, 0, $params->get('length', 4));
+        return '/' . $langSef . substr($x, 0, $params->get('length', 4));
     }
     
     public static function urlExists($url)
