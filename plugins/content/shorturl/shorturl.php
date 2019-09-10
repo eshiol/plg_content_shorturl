@@ -261,8 +261,8 @@ class plgContentShorturl extends JPlugin
 		{
 			return true;
 		}
-		
-		if (!empty($data))
+
+		if (is_object($data))
 		{
     		$data->slug = $data->alias ? ($data->id . ':' . $data->alias) : $data->id;
     		$url  = ContentHelperRoute::getArticleRoute($data->slug, $data->catid, $data->language);
