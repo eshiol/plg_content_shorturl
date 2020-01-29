@@ -19,6 +19,10 @@ defined('_JEXEC') or die('Restricted access.');
 require_once JPATH_ROOT . '/components/com_content/helpers/route.php';
 require_once JPATH_ROOT . '/plugins/content/shorturl/helpers/shorturl.php';
 
+if (file_exists(JPATH_ROOT . '/components/com_k2/helpers/route.php')) {
+    require_once JPATH_ROOT . '/components/com_k2/helpers/route.php';
+}
+
 jimport('joomla.plugin.plugin');
 
 use Joomla\CMS\Language\LanguageHelper;
@@ -81,7 +85,7 @@ class plgContentShorturl extends JPlugin
 		
 		if (JFactory::getApplication()->isAdmin())
 		{
-			$allowedContexts = array('com_content.article');
+            $allowedContexts = array('com_content.article', 'com_k2.item');
 		}
 		else
 		{
@@ -93,15 +97,23 @@ class plgContentShorturl extends JPlugin
 			return true;
 		}
 
-		$article->slug = $article->alias ? ($article->id . ':' . $article->alias) : $article->id;
-		$url  = ContentHelperRoute::getArticleRoute($article->slug, $article->catid, $article->language);
-		JLog::add(new JLogEntry('url: ' . $url, JLog::DEBUG, 'plg_content_shorturl'));
-		
-		$shortUrl = rtrim(JURI::root(true), '/') . ShorturlHelper::getShortUrl($url, $article->language);
+        if ($context === 'com_content.article')
+        {
+            $article->slug = $article->alias ? ($article->id . ':' . $article->alias) : $article->id;
+            $url = ContentHelperRoute::getArticleRoute($article->slug, $article->catid, $article->language);
+        }
+        else if ($context === 'com_k2.item')
+        {
+            $article->slug = $article->alias ? ($article->id . ':' . $article->alias) : $article->id;
+            $url = K2HelperRoute::getItemRoute($article->slug, $article->catid);
+        }
 
-		JLog::add(new JLogEntry('shorturl: ' . $shortUrl, JLog::DEBUG, 'plg_content_shorturl'));
-		
-		// See if the current url exists in the database as a redirect.
+        JLog::add(new JLogEntry('url: ' . $url, JLog::DEBUG, 'plg_content_shorturl'));
+
+        $shortUrl = rtrim(JURI::root(true), '/') . ShorturlHelper::getShortUrl($url, $article->language);
+        JLog::add(new JLogEntry('shorturl: ' . $shortUrl, JLog::DEBUG, 'plg_content_shorturl'));
+
+        // See if the current url exists in the database as a redirect.
 		$db    = JFactory::getDbo();
 		$query = $db->getQuery(true)
 			->select($db->quoteName('old_url'))
@@ -188,30 +200,31 @@ class plgContentShorturl extends JPlugin
 	 * @return  void
 	 */
 	public function onContentAfterDelete($context, $article)
-	{
-		if (!JFactory::getConfig()->get('sef', 1))
-		{
-			return true;
-		}		
+    {
+        if (!JFactory::getConfig()->get('sef', 1)) {
+            return true;
+        }
 
-		JLog::add(new JLogEntry(__METHOD__, JLog::DEBUG, 'plg_content_shorturl'));
-		
-		if (JFactory::getApplication()->isAdmin())
-		{
-			$allowedContexts = array('com_content.article');
-		}
-		else
-		{
-			$allowedContexts = array('com_content.form');
-		}
+        JLog::add(new JLogEntry(__METHOD__, JLog::DEBUG, 'plg_content_shorturl'));
 
-		if (!in_array($context, $allowedContexts))
-		{
-			return true;
-		}
-		
-		$article->slug = $article->alias ? ($article->id . ':' . $article->alias) : $article->id;
-		$url  = ContentHelperRoute::getArticleRoute($article->slug, $article->catid, $article->language);
+        if (JFactory::getApplication()->isAdmin()) {
+            $allowedContexts = array('com_content.article', 'com_k2.item');
+        } else {
+            $allowedContexts = array('com_content.form');
+        }
+
+        if (!in_array($context, $allowedContexts)) {
+            return true;
+        }
+
+        if ($context === 'com_content.article') {
+            $article->slug = $article->alias ? ($article->id . ':' . $article->alias) : $article->id;
+            $url = ContentHelperRoute::getArticleRoute($article->slug, $article->catid, $article->language);
+        } else if ($context === 'com_k2.item') {
+            $article->slug = $article->alias ? ($article->id . ':' . $article->alias) : $article->id;
+            $url = K2HelperRoute::getItemRoute($article->slug, $article->catid);
+        }
+
 		JLog::add(new JLogEntry('url: ' . $url, JLog::DEBUG, 'plg_content_shorturl'));
 		
 		$shortUrl = rtrim(JURI::root(true), '/') . ShorturlHelper::getShortUrl($url, $article->language);
@@ -250,7 +263,7 @@ class plgContentShorturl extends JPlugin
 		
 		if (JFactory::getApplication()->isAdmin())
 		{
-			$allowedContexts = array('com_content.article');
+            $allowedContexts = array('com_content.article', 'com_k2.item');
 		}
 		else
 		{
@@ -264,8 +277,17 @@ class plgContentShorturl extends JPlugin
 
 		if (is_object($data))
 		{
-    		$data->slug = $data->alias ? ($data->id . ':' . $data->alias) : $data->id;
-    		$url  = ContentHelperRoute::getArticleRoute($data->slug, $data->catid, $data->language);
+            if ($form->getName() === 'com_content.article')
+            {
+                $data->slug = $data->alias ? ($data->id . ':' . $data->alias) : $data->id;
+                $url = ContentHelperRoute::getArticleRoute($data->slug, $data->catid, $data->language);
+            }
+            else if ($form->getName() === 'com_k2.item')
+            {
+                $data->slug = $data->alias ? ($data->id . ':' . $data->alias) : $data->id;
+                $url = K2HelperRoute::getItemRoute($data->slug, $data->catid);
+            }
+
     		JLog::add(new JLogEntry('url: ' . $url, JLog::DEBUG, 'plg_content_shorturl'));
     		
     		$shortUrl = rtrim(JURI::root(true), '/') . ShorturlHelper::getShortUrl($url, $data->language);
