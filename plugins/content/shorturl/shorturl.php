@@ -97,14 +97,13 @@ class plgContentShorturl extends JPlugin
 			return true;
 		}
 
+        $article->slug = $article->alias ? ($article->id . ':' . $article->alias) : $article->id;
         if ($context === 'com_content.article')
         {
-            $article->slug = $article->alias ? ($article->id . ':' . $article->alias) : $article->id;
             $url = ContentHelperRoute::getArticleRoute($article->slug, $article->catid, $article->language);
         }
         else if ($context === 'com_k2.item')
         {
-            $article->slug = $article->alias ? ($article->id . ':' . $article->alias) : $article->id;
             $url = K2HelperRoute::getItemRoute($article->slug, $article->catid);
         }
 
@@ -217,11 +216,10 @@ class plgContentShorturl extends JPlugin
             return true;
         }
 
+        $article->slug = $article->alias ? ($article->id . ':' . $article->alias) : $article->id;
         if ($context === 'com_content.article') {
-            $article->slug = $article->alias ? ($article->id . ':' . $article->alias) : $article->id;
             $url = ContentHelperRoute::getArticleRoute($article->slug, $article->catid, $article->language);
         } else if ($context === 'com_k2.item') {
-            $article->slug = $article->alias ? ($article->id . ':' . $article->alias) : $article->id;
             $url = K2HelperRoute::getItemRoute($article->slug, $article->catid);
         }
 
@@ -257,11 +255,12 @@ class plgContentShorturl extends JPlugin
 		if (!JFactory::getConfig()->get('sef', 1))
 		{
 			return true;
-		}		
+		}
 
 		JLog::add(new JLogEntry(__METHOD__, JLog::DEBUG, 'plg_content_shorturl'));
-		
-		if (JFactory::getApplication()->isAdmin())
+
+        $context = $form->getName();
+        if (JFactory::getApplication()->isAdmin())
 		{
             $allowedContexts = array('com_content.article', 'com_k2.item');
 		}
@@ -270,21 +269,20 @@ class plgContentShorturl extends JPlugin
 			$allowedContexts = array('com_content.form');
 		}
 
-		if (!in_array($form->getName(), $allowedContexts))
+		if (!in_array($context, $allowedContexts))
 		{
 			return true;
 		}
 
 		if (is_object($data))
 		{
-            if ($form->getName() === 'com_content.article')
+            $data->slug = $data->alias ? ($data->id . ':' . $data->alias) : $data->id;
+            if ($context === 'com_content.article')
             {
-                $data->slug = $data->alias ? ($data->id . ':' . $data->alias) : $data->id;
                 $url = ContentHelperRoute::getArticleRoute($data->slug, $data->catid, $data->language);
             }
-            else if ($form->getName() === 'com_k2.item')
+            else if ($context === 'com_k2.item')
             {
-                $data->slug = $data->alias ? ($data->id . ':' . $data->alias) : $data->id;
                 $url = K2HelperRoute::getItemRoute($data->slug, $data->catid);
             }
 
