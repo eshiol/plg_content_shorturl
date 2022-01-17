@@ -155,8 +155,8 @@ class plgContentShorturl extends JPlugin
 				$db->quoteName('comment'),
 				$db->quoteName('hits'),
 				$db->quoteName('published'),
-				$db->quoteName('created_date')
-			);
+				$db->quoteName('created_date'),
+				$db->quoteName('modified_date'));
 			
 			$values = array(
 				$db->quote($shortUrl),
@@ -165,8 +165,8 @@ class plgContentShorturl extends JPlugin
 				$db->quote('plg_content_shorturl'),
 				0,
 				1,
-				$db->quote(JFactory::getDate()->toSql())
-			);
+				$db->quote(JFactory::getDate()->toSql()),
+				$db->quote(JFactory::getDate()->toSql()));
 			
 			$query->clear()
 				->insert($db->quoteName('#__redirect_links'), false)
@@ -184,8 +184,8 @@ class plgContentShorturl extends JPlugin
 				->set($db->quoteName('new_url') . ' = ' . $db->quote($url))
 				->set($db->quoteName('published') . ' = true')
 				->set($db->quoteName('comment') . ' = ' . $db->quote('plg_content_shorturl'))
-				->where($db->quoteName('id') . ' = ' . (int) $link->id)
-				;
+				->set($db->quoteName('modified_date') . ' = ' . $db->quote(JFactory::getDate()->toSql()))
+				->where($db->quoteName('id') . ' = ' . (int) $link->id);
 			$db->setQuery($query);
 			$db->execute();
 			JLog::add(new JLogEntry(JText::sprintf('PLG_CONTENT_SHORTURL_UPDATED', $shortUrl), JLog::INFO, 'plg_content_shorturl'));
