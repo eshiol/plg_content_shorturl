@@ -16,7 +16,15 @@
 // no direct access
 defined('_JEXEC') or die('Restricted access.');
 
-require_once JPATH_ROOT . '/components/com_content/helpers/route.php';
+$version = new JVersion();
+if (!$version->isCompatible('4'))
+{
+    if (file_exists(JPATH_ROOT . '/components/com_content/helpers/route.php'))
+    {
+        require_once JPATH_ROOT . '/components/com_content/helpers/route.php';
+        class_alias('ContentHelperRoute', 'Joomla\Component\Content\Site\Helper\RouteHelper');
+    }
+}
 require_once JPATH_ROOT . '/plugins/content/shorturl/helpers/shorturl.php';
 
 if (file_exists(JPATH_ROOT . '/components/com_k2/helpers/route.php'))
@@ -27,7 +35,7 @@ if (file_exists(JPATH_ROOT . '/components/com_k2/helpers/route.php'))
 jimport('joomla.plugin.plugin');
 
 use Joomla\CMS\Language\LanguageHelper;
-
+use Joomla\Component\Content\Site\Helper\RouteHelper;
 
 /**
  * @since		3.5.0
@@ -84,7 +92,7 @@ class plgContentShorturl extends JPlugin
 			return true;
 		}		
 
-		if (JFactory::getApplication()->isAdmin())
+		if (JFactory::getApplication()->isClient('administrator'))
 		{
 			$allowedContexts = array('com_content.article', 'com_k2.item');
 		}
@@ -105,7 +113,7 @@ class plgContentShorturl extends JPlugin
 		}
 		else
 		{
-			$url = ContentHelperRoute::getArticleRoute($article->slug, $article->catid, $article->language);
+		    $url = RouteHelper::getArticleRoute($article->slug, $article->catid, $article->language);
 		}
 		JLog::add(new JLogEntry('url: ' . $url, JLog::DEBUG, 'plg_content_shorturl'));
 
@@ -207,7 +215,7 @@ class plgContentShorturl extends JPlugin
 
 		JLog::add(new JLogEntry(__METHOD__, JLog::DEBUG, 'plg_content_shorturl'));
 		
-		if (JFactory::getApplication()->isAdmin())
+		if (JFactory::getApplication()->isClient('administrator'))
 		{
 			$allowedContexts = array('com_content.article');
 		}
@@ -259,7 +267,7 @@ class plgContentShorturl extends JPlugin
 
 		JLog::add(new JLogEntry(__METHOD__, JLog::DEBUG, 'plg_content_shorturl'));
 		
-		if (JFactory::getApplication()->isAdmin())
+		if (JFactory::getApplication()->isClient('administrator'))
 		{
 			$allowedContexts = array('com_content.article');
 		}
