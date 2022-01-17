@@ -2,7 +2,8 @@
 /**
  * @package     Joomla.Plugins
  * @subpackage  Content.Shorturl
- * * @version     __DEPLOY_VERSION__
+ *
+ * @version     __DEPLOY_VERSION__
  * @since       3.5.0
  *
  * @author      Helios Ciancio <info (at) eshiol (dot) it>
@@ -18,7 +19,11 @@
 // no direct access
 defined('_JEXEC') or die('Restricted access.');
 
-require_once JPATH_ROOT . '/components/com_content/helpers/route.php';
+if (!class_exists('Joomla\Component\Content\Site\Helper\RouteHelper')) 
+{
+	require_once JPATH_ROOT . '/components/com_content/helpers/route.php';
+	class_alias('ContentHelperRoute', 'Joomla\Component\Content\Site\Helper\RouteHelper');
+}
 require_once JPATH_ROOT . '/plugins/content/shorturl/helpers/shorturl.php';
 
 if (file_exists(JPATH_ROOT . '/components/com_k2/helpers/route.php'))
@@ -29,6 +34,7 @@ if (file_exists(JPATH_ROOT . '/components/com_k2/helpers/route.php'))
 jimport('joomla.plugin.plugin');
 
 use Joomla\CMS\Language\LanguageHelper;
+use Joomla\Component\Content\Site\Helper\RouteHelper;
 
 class plgContentShorturl extends JPlugin
 {
@@ -106,7 +112,7 @@ class plgContentShorturl extends JPlugin
 		}
 		else
 		{
-			$url = ContentHelperRoute::getArticleRoute($article->slug, $article->catid, $article->language);
+		    $url = RouteHelper::getArticleRoute($article->slug, $article->catid, $article->language);
 		}
 		JLog::add(new JLogEntry('url: ' . $url, JLog::DEBUG, 'plg_content_shorturl'));
 
@@ -146,8 +152,9 @@ class plgContentShorturl extends JPlugin
 				$db->quoteName('comment'),
 				$db->quoteName('hits'),
 				$db->quoteName('published'),
-				$db->quoteName('created_date'));
-
+				$db->quoteName('created_date'),
+				$db->quoteName('modified_date'));
+			
 			$values = array(
 				$db->quote($shortUrl),
 				$db->quote($url),
@@ -155,8 +162,9 @@ class plgContentShorturl extends JPlugin
 				$db->quote('plg_content_shorturl'),
 				0,
 				1,
+				$db->quote(JFactory::getDate()->toSql()),
 				$db->quote(JFactory::getDate()->toSql()));
-
+			
 			$query->clear()
 				->insert($db->quoteName('#__redirect_links'), false)
 				->columns($columns)
@@ -173,6 +181,7 @@ class plgContentShorturl extends JPlugin
 				->set($db->quoteName('new_url') . ' = ' . $db->quote($url))
 				->set($db->quoteName('published') . ' = true')
 				->set($db->quoteName('comment') . ' = ' . $db->quote('plg_content_shorturl'))
+				->set($db->quoteName('modified_date') . ' = ' . $db->quote(JFactory::getDate()->toSql()))
 				->where($db->quoteName('id') . ' = ' . (int) $link->id);
 			$db->setQuery($query);
 			$db->execute();
