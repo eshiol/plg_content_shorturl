@@ -85,7 +85,7 @@ class plgContentShorturl extends JPlugin
 			return true;
 		}
 
-		if (JFactory::getApplication()->isAdmin())
+		if (JFactory::getApplication()->isClient('administrator'))
 		{
 			$allowedContexts = array('com_content.article', 'com_k2.item');
 		}
@@ -203,7 +203,7 @@ class plgContentShorturl extends JPlugin
 
 		JLog::add(new JLogEntry(__METHOD__, JLog::DEBUG, 'plg_content_shorturl'));
 
-		if (JFactory::getApplication()->isAdmin())
+		if (JFactory::getApplication()->isClient('administrator'))
 		{
 			$allowedContexts = array('com_content.article');
 		}
@@ -254,7 +254,7 @@ class plgContentShorturl extends JPlugin
 
 		JLog::add(new JLogEntry(__METHOD__, JLog::DEBUG, 'plg_content_shorturl'));
 
-		if (JFactory::getApplication()->isAdmin())
+		if (JFactory::getApplication()->isClient('administrator'))
 		{
 			$allowedContexts = array('com_content.article');
 		}
@@ -290,8 +290,6 @@ class plgContentShorturl extends JPlugin
     		$link = $db->loadObject();
     		if ($link)
     		{
-    			JFactory::getApplication()->enqueueMessage('<pre>'.print_r($data, true).'</pre>');
-
     			if ($link->published == 1)
     			{
     				JLog::add(new JLogEntry(JText::sprintf(JText::_('PLG_CONTENT_SHORTURL_ENABLED'), $link->old_url), JLog::INFO, 'plg_content_shorturl'));
