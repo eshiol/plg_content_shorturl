@@ -16,7 +16,11 @@
 // no direct access
 defined('_JEXEC') or die('Restricted access.');
 
-require_once JPATH_ROOT . '/components/com_content/helpers/route.php';
+if (!class_exists('Joomla\Component\Content\Site\Helper\RouteHelper')) 
+{
+	require_once JPATH_ROOT . '/components/com_content/helpers/route.php';
+	class_alias('ContentHelperRoute', 'Joomla\Component\Content\Site\Helper\RouteHelper');
+}
 require_once JPATH_ROOT . '/plugins/content/shorturl/helpers/shorturl.php';
 
 if (file_exists(JPATH_ROOT . '/components/com_k2/helpers/route.php'))
@@ -27,7 +31,7 @@ if (file_exists(JPATH_ROOT . '/components/com_k2/helpers/route.php'))
 jimport('joomla.plugin.plugin');
 
 use Joomla\CMS\Language\LanguageHelper;
-
+use Joomla\Component\Content\Site\Helper\RouteHelper;
 
 /**
  * @since		3.5.0
@@ -84,7 +88,7 @@ class plgContentShorturl extends JPlugin
 			return true;
 		}		
 
-		if (JFactory::getApplication()->isAdmin())
+		if (JFactory::getApplication()->isClient('administrator'))
 		{
 			$allowedContexts = array('com_content.article', 'com_k2.item');
 		}
@@ -105,7 +109,7 @@ class plgContentShorturl extends JPlugin
 		}
 		else
 		{
-			$url = ContentHelperRoute::getArticleRoute($article->slug, $article->catid, $article->language);
+		    $url = RouteHelper::getArticleRoute($article->slug, $article->catid, $article->language);
 		}
 		JLog::add(new JLogEntry('url: ' . $url, JLog::DEBUG, 'plg_content_shorturl'));
 
@@ -147,8 +151,8 @@ class plgContentShorturl extends JPlugin
 				$db->quoteName('comment'),
 				$db->quoteName('hits'),
 				$db->quoteName('published'),
-				$db->quoteName('created_date')
-			);
+				$db->quoteName('created_date'),
+				$db->quoteName('modified_date'));
 			
 			$values = array(
 				$db->quote($shortUrl),
@@ -157,14 +161,14 @@ class plgContentShorturl extends JPlugin
 				$db->quote('plg_content_shorturl'),
 				0,
 				1,
-				$db->quote(JFactory::getDate()->toSql())
-			);
+				$db->quote(JFactory::getDate()->toSql()),
+				$db->quote(JFactory::getDate()->toSql()));
 			
 			$query->clear()
 				->insert($db->quoteName('#__redirect_links'), false)
 				->columns($columns)
 				->values(implode(', ', $values));
-			
+
 			$db->setQuery($query);
 			$db->execute();
 			JLog::add(new JLogEntry(JText::sprintf('PLG_CONTENT_SHORTURL_ADDED', $shortUrl), JLog::INFO, 'plg_content_shorturl'));
@@ -176,8 +180,8 @@ class plgContentShorturl extends JPlugin
 				->set($db->quoteName('new_url') . ' = ' . $db->quote($url))
 				->set($db->quoteName('published') . ' = true')
 				->set($db->quoteName('comment') . ' = ' . $db->quote('plg_content_shorturl'))
-				->where($db->quoteName('id') . ' = ' . (int) $link->id)
-				;
+				->set($db->quoteName('modified_date') . ' = ' . $db->quote(JFactory::getDate()->toSql()))
+				->where($db->quoteName('id') . ' = ' . (int) $link->id);
 			$db->setQuery($query);
 			$db->execute();
 			JLog::add(new JLogEntry(JText::sprintf('PLG_CONTENT_SHORTURL_UPDATED', $shortUrl), JLog::INFO, 'plg_content_shorturl'));
@@ -207,7 +211,7 @@ class plgContentShorturl extends JPlugin
 
 		JLog::add(new JLogEntry(__METHOD__, JLog::DEBUG, 'plg_content_shorturl'));
 		
-		if (JFactory::getApplication()->isAdmin())
+		if (JFactory::getApplication()->isClient('administrator'))
 		{
 			$allowedContexts = array('com_content.article');
 		}
@@ -259,7 +263,7 @@ class plgContentShorturl extends JPlugin
 
 		JLog::add(new JLogEntry(__METHOD__, JLog::DEBUG, 'plg_content_shorturl'));
 		
-		if (JFactory::getApplication()->isAdmin())
+		if (JFactory::getApplication()->isClient('administrator'))
 		{
 			$allowedContexts = array('com_content.article');
 		}
@@ -296,8 +300,6 @@ class plgContentShorturl extends JPlugin
     		$link = $db->loadObject();
     		if ($link)
     		{
-    			JFactory::getApplication()->enqueueMessage('<pre>'.print_r($data, true).'</pre>');
-    			
     			if ($link->published == 1)
     			{
     				JLog::add(new JLogEntry(JText::sprintf(JText::_('PLG_CONTENT_SHORTURL_ENABLED'), $link->old_url), JLog::INFO, 'plg_content_shorturl'));
