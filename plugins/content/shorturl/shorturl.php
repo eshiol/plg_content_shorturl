@@ -16,14 +16,10 @@
 // no direct access
 defined('_JEXEC') or die('Restricted access.');
 
-$version = new JVersion();
-if (!$version->isCompatible('4'))
+if (!class_exists('Joomla\Component\Content\Site\Helper\RouteHelper')) 
 {
-    if (file_exists(JPATH_ROOT . '/components/com_content/helpers/route.php'))
-    {
-        require_once JPATH_ROOT . '/components/com_content/helpers/route.php';
-        class_alias('ContentHelperRoute', 'Joomla\Component\Content\Site\Helper\RouteHelper');
-    }
+	require_once JPATH_ROOT . '/components/com_content/helpers/route.php';
+	class_alias('ContentHelperRoute', 'Joomla\Component\Content\Site\Helper\RouteHelper');
 }
 require_once JPATH_ROOT . '/plugins/content/shorturl/helpers/shorturl.php';
 
