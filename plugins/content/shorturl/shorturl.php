@@ -172,7 +172,7 @@ class plgContentShorturl extends JPlugin
 				->insert($db->quoteName('#__redirect_links'), false)
 				->columns($columns)
 				->values(implode(', ', $values));
-			
+
 			$db->setQuery($query);
 			$db->execute();
 			JLog::add(new JLogEntry(JText::sprintf('PLG_CONTENT_SHORTURL_ADDED', $shortUrl), JLog::INFO, 'plg_content_shorturl'));
@@ -304,8 +304,6 @@ class plgContentShorturl extends JPlugin
     		$link = $db->loadObject();
     		if ($link)
     		{
-    			JFactory::getApplication()->enqueueMessage('<pre>'.print_r($data, true).'</pre>');
-    			
     			if ($link->published == 1)
     			{
     				JLog::add(new JLogEntry(JText::sprintf(JText::_('PLG_CONTENT_SHORTURL_ENABLED'), $link->old_url), JLog::INFO, 'plg_content_shorturl'));
